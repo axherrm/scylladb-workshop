@@ -1,0 +1,31 @@
+services:
+  scylla-node1:
+    image: scylladb/scylla
+    container_name: scylla-node1
+    command: --reactor-backend=epoll
+    ports:
+      - "9042:9042"
+    networks:
+      web:
+
+  scylla-node2:
+    image: scylladb/scylla
+    container_name: scylla-node2
+    command: --seeds=scylla-node1 --reactor-backend=epoll
+    networks:
+      web:
+    depends_on:
+      - scylla-node1
+
+  scylla-node3:
+    image: scylladb/scylla
+    container_name: scylla-node3
+    command: --seeds=scylla-node1 --reactor-backend=epoll
+    networks:
+      web:
+    depends_on:
+      - scylla-node1
+
+networks:
+  web:
+    driver: bridge
