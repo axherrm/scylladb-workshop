@@ -2,18 +2,24 @@ services:
   scylla-node1:
     image: scylladb/scylla
     container_name: scylla-node1
-    command: --reactor-backend=epoll
+    command: --reactor-backend=epoll && cqlsh COPY workshop.customer FROM '/etc/scylla/sample-data/Customer.csv' WITH DELIMITER=',' AND HEADER=TRUE
     ports:
       - "9042:9042"
     networks:
-      web:
+      scylla-cluster:
+        ipv4_address: 192.168.100.11
+    volumes:
+      - "./sample-data/:/etc/scylla/sample-data"
 
   scylla-node2:
     image: scylladb/scylla
     container_name: scylla-node2
     command: --seeds=scylla-node1 --reactor-backend=epoll
     networks:
-      web:
+      scylla-cluster:
+        ipv4_address: 192.168.100.12
+    ports:
+      - "9043:9042"
     depends_on:
       - scylla-node1
 
@@ -22,10 +28,16 @@ services:
     container_name: scylla-node3
     command: --seeds=scylla-node1 --reactor-backend=epoll
     networks:
-      web:
+      scylla-cluster:
+        ipv4_address: 192.168.100.13
+    ports:
+      - "9044:9042"
     depends_on:
       - scylla-node1
 
 networks:
-  web:
+  scylla-cluster:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.100.0/24
